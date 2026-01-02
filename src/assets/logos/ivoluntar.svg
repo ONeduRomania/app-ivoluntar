@@ -1,0 +1,20 @@
+<svg width="200" height="60" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Logo shape with gradient -->
+  <defs>
+    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A90E2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3B82F6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Main logo shape (person/checkmark) -->
+  <path d="M15 45C15 35 20 25 30 20C35 17.5 40 15 45 15C50 15 52.5 17.5 55 20C60 25 62.5 30 62.5 35C62.5 40 60 45 55 50C52.5 52.5 50 55 45 55C40 55 35 52.5 30 50C20 45 15 40 15 35L15 45Z" fill="url(#logoGradient)"/>
+  <circle cx="30" cy="25" r="8" fill="url(#logoGradient)"/>
+  <path d="M45 20C50 20 55 25 60 30C62.5 32.5 65 35 65 40" stroke="url(#logoGradient)" stroke-width="3" stroke-linecap="round" fill="none"/>
+  
+  <!-- Text iVoluntar -->
+  <text x="75" y="38" font-family="Arial, sans-serif" font-size="24" font-weight="600" fill="#3B82F6">
+    <tspan fill="#4A90E2">i</tspan><tspan>Voluntar</tspan>
+  </text>
+</svg>
+
