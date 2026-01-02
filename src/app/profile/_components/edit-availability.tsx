@@ -3,17 +3,19 @@
 import { useState } from "react";
 import { Modal } from "./modal";
 
+interface AvailabilityData {
+  zile: string;
+  intervale: string;
+  onsite: boolean;
+  online: boolean;
+  deplasari: boolean;
+}
+
 interface EditAvailabilityProps {
   isOpen: boolean;
   onClose: () => void;
-  data: {
-    zile: string;
-    intervale: string;
-    onsite: boolean;
-    online: boolean;
-    deplasari: boolean;
-  };
-  onSave: (data: typeof props.data) => void;
+  data: AvailabilityData;
+  onSave: (data: AvailabilityData) => void;
 }
 
 export function EditAvailability({
