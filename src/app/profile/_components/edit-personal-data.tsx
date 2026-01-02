@@ -4,19 +4,21 @@ import { useState } from "react";
 import { Modal } from "./modal";
 import { InfoRow } from "./info-section";
 
+interface PersonalData {
+  numePrenume: string;
+  dataNasterii: string;
+  domiciliu: string;
+  resedinta: string;
+  telefon: string;
+  email: string;
+  cnp: string;
+}
+
 interface EditPersonalDataProps {
   isOpen: boolean;
   onClose: () => void;
-  data: {
-    numePrenume: string;
-    dataNasterii: string;
-    domiciliu: string;
-    resedinta: string;
-    telefon: string;
-    email: string;
-    cnp: string;
-  };
-  onSave: (data: typeof props.data) => void;
+  data: PersonalData;
+  onSave: (data: PersonalData) => void;
 }
 
 export function EditPersonalData({

@@ -4,18 +4,20 @@ import Image from "next/image";
 import { useState } from "react";
 import { Modal } from "./modal";
 
+interface IdDocumentData {
+  seriaBuletin: string;
+  numarBuletin: string;
+  dataEmiteriiBuletin: string;
+  dataExpirareBuletin: string;
+  emitentBuletin: string;
+  documentImage?: string;
+}
+
 interface EditIdDocumentProps {
   isOpen: boolean;
   onClose: () => void;
-  data: {
-    seriaBuletin: string;
-    numarBuletin: string;
-    dataEmiteriiBuletin: string;
-    dataExpirareBuletin: string;
-    emitentBuletin: string;
-    documentImage?: string;
-  };
-  onSave: (data: typeof props.data) => void;
+  data: IdDocumentData;
+  onSave: (data: IdDocumentData) => void;
 }
 
 export function EditIdDocument({

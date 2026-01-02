@@ -4,13 +4,13 @@ import Link from "next/link";
 import { useSidebarContext } from "./sidebar-context";
 
 const menuItemBaseStyles = cva(
-  "rounded-lg px-3.5 font-medium text-dark-4 transition-all duration-200 dark:text-dark-6",
+  "rounded-lg px-3 text-sm transition-all duration-200",
   {
     variants: {
       isActive: {
-        true: "bg-[rgba(87,80,241,0.07)] text-primary hover:bg-[rgba(87,80,241,0.07)] dark:bg-[#FFFFFF1A] dark:text-white",
+        true: "bg-primary/10 text-primary font-semibold hover:bg-primary/10 dark:bg-[#FFFFFF1A] dark:text-white",
         false:
-          "hover:bg-gray-100 hover:text-dark hover:dark:bg-[#FFFFFF1A] hover:dark:text-white",
+          "font-medium text-dark-4 hover:bg-gray-2 hover:text-dark hover:dark:bg-[#FFFFFF1A] hover:dark:text-white dark:text-dark-6",
       },
     },
     defaultVariants: {
@@ -37,7 +37,7 @@ export function MenuItem(
         className={cn(
           menuItemBaseStyles({
             isActive: props.isActive,
-            className: "relative block py-1",
+            className: "relative block py-2.5",
           }),
           props.className,
         )}
@@ -53,7 +53,7 @@ export function MenuItem(
       aria-expanded={props.isActive}
       className={menuItemBaseStyles({
         isActive: props.isActive,
-        className: "flex w-full items-center gap-3 py-2",
+        className: "flex w-full items-center gap-3 py-2.5",
       })}
     >
       {props.children}

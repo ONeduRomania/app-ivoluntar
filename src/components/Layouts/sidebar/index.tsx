@@ -66,12 +66,12 @@ export function Sidebar() {
         aria-hidden={!isOpen}
         inert={!isOpen}
       >
-        <div className="flex h-full flex-col py-6 pl-[25px] pr-[7px]">
-          <div className="relative pr-4.5 flex justify-center">
+        <div className="flex h-full flex-col">
+          <div className="relative border-b border-stroke px-4 py-5 dark:border-dark-3">
             <Link
               href={"/"}
               onClick={() => isMobile && toggleSidebar()}
-              className="px-0 py-1.5 min-[850px]:py-0"
+              className="flex items-center justify-center"
             >
               <Logo />
             </Link>
@@ -79,21 +79,20 @@ export function Sidebar() {
             {isMobile && (
               <button
                 onClick={toggleSidebar}
-                className="absolute left-3/4 right-4.5 top-1/2 -translate-y-1/2 text-right"
+                className="absolute right-4 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-dark-4 transition-colors hover:bg-gray-2 dark:text-dark-6 dark:hover:bg-dark-2"
               >
                 <span className="sr-only">Close Menu</span>
-
-                <ArrowLeftIcon className="ml-auto size-7" />
+                <ArrowLeftIcon className="size-5" />
               </button>
             )}
           </div>
 
           {/* Navigation */}
-          <div className="custom-scrollbar mt-4 flex-1 overflow-y-auto pr-3 min-[850px]:mt-6">
-            {NAV_DATA.map((section) => (
-              <div key={section.label || "menu"} className="mb-4">
+          <div className="custom-scrollbar flex-1 overflow-y-auto px-3 py-4">
+            {NAV_DATA.map((section, index) => (
+              <div key={index}>
                 <nav role="navigation" aria-label="Main navigation">
-                  <ul className="space-y-1">
+                  <ul className="space-y-0.5">
                     {section.items.map((item) => (
                       <li key={item.title}>
                         {item.items.length ? (
@@ -105,11 +104,11 @@ export function Sidebar() {
                               onClick={() => toggleExpanded(item.title)}
                             >
                               <item.icon
-                                className="size-6 shrink-0"
+                                className="size-5 shrink-0"
                                 aria-hidden="true"
                               />
 
-                              <span>{item.title}</span>
+                              <span className="flex-1 text-left">{item.title}</span>
 
                               <ChevronUp
                                 className={cn(
@@ -123,7 +122,7 @@ export function Sidebar() {
 
                             {expandedItems.includes(item.title) && (
                               <ul
-                                className="ml-9 mr-0 space-y-1 pb-2 pr-0 pt-1.5"
+                                className="ml-4 mt-1 space-y-0.5"
                                 role="menu"
                               >
                                 {item.items.map((subItem) => (
@@ -134,7 +133,7 @@ export function Sidebar() {
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         onClick={() => isMobile && toggleSidebar()}
-                                        className="relative block rounded-lg px-3.5 py-2 font-medium text-dark-4 transition-all duration-200 hover:bg-gray-100 hover:text-dark hover:dark:bg-[#FFFFFF1A] hover:dark:text-white dark:text-dark-6"
+                                        className="relative block rounded-lg px-3 py-2 text-sm font-medium text-dark-4 transition-all duration-200 hover:bg-gray-2 hover:text-dark hover:dark:bg-[#FFFFFF1A] hover:dark:text-white dark:text-dark-6"
                                       >
                                         <span>{subItem.title}</span>
                                       </a>
@@ -143,6 +142,7 @@ export function Sidebar() {
                                         as="link"
                                         href={subItem.url}
                                         isActive={pathname === subItem.url}
+                                        className="py-2"
                                       >
                                         <span>{subItem.title}</span>
                                       </MenuItem>
@@ -162,13 +162,13 @@ export function Sidebar() {
 
                             return (
                               <MenuItem
-                                className="flex items-center gap-3 py-3"
+                                className="flex items-center gap-3"
                                 as="link"
                                 href={href}
                                 isActive={pathname === href}
                               >
                                 <item.icon
-                                  className="size-6 shrink-0"
+                                  className="size-5 shrink-0"
                                   aria-hidden="true"
                                 />
 

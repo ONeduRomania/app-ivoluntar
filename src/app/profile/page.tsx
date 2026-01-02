@@ -84,7 +84,7 @@ export default function Page() {
     departament: "Comunicare",
     superiorDirect: "Maria Popescu",
     vechime: "3 ani, 5 luni",
-    documentImage: undefined,
+    documentImage: undefined as string | undefined,
     // Disponibilitate
     disponibilitate: {
       zile: "Luni - Vineri",
@@ -669,7 +669,14 @@ export default function Page() {
         onSave={(experiences) => {
           setData((prev) => ({
             ...prev,
-            experienteVoluntariat: experiences,
+            experienteVoluntariat: experiences.map((exp) => ({
+              id: exp.id,
+              organizatie: exp.organizatie,
+              pozitie: exp.pozitie || "",
+              locatie: exp.locatie || "",
+              perioada: exp.perioada || "",
+              descriere: exp.descriere || "",
+            })),
           }));
         }}
       />
@@ -682,7 +689,14 @@ export default function Page() {
         onSave={(experiences) => {
           setData((prev) => ({
             ...prev,
-            experienteProfesionale: experiences,
+            experienteProfesionale: experiences.map((exp) => ({
+              id: exp.id,
+              organizatie: exp.organizatie,
+              pozitie: exp.pozitie || "",
+              locatie: exp.locatie || "",
+              perioada: exp.perioada || "",
+              descriere: exp.descriere || "",
+            })),
           }));
         }}
       />
@@ -717,11 +731,29 @@ export default function Page() {
       <EditEducation
         isOpen={modals.editEducation}
         onClose={() => toggleModal("editEducation")}
-        educations={data.studii}
+        educations={data.studii.map((edu) => ({
+          id: edu.id,
+          tip: edu.tip as "studii" | "curs",
+          institutie: edu.institutie,
+          specializare: edu.specializare,
+          nivel: edu.nivel,
+          locatie: edu.locatie,
+          perioada: edu.perioada,
+          descriere: edu.descriere,
+        }))}
         onSave={(educations) => {
           setData((prev) => ({
             ...prev,
-            studii: educations,
+            studii: educations.map((edu) => ({
+              id: edu.id,
+              tip: edu.tip,
+              institutie: edu.institutie,
+              specializare: edu.specializare || "",
+              nivel: edu.nivel || "",
+              locatie: edu.locatie || "",
+              perioada: edu.perioada || "",
+              descriere: edu.descriere || "",
+            })),
           }));
         }}
       />
