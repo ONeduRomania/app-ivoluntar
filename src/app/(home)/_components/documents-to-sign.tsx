@@ -1,3 +1,6 @@
+"use client";
+
+import { useOrganization } from "@/contexts/organization-context";
 import { cn } from "@/lib/utils";
 
 interface Document {
@@ -7,30 +10,6 @@ interface Document {
   deadline?: string;
   priority: "high" | "medium" | "low";
 }
-
-// TODO: Înlocuiește cu date reale din backend
-const mockDocuments: Document[] = [
-  {
-    id: "1",
-    title: "Contract de voluntariat",
-    type: "Contract",
-    deadline: "2024-01-20",
-    priority: "high",
-  },
-  {
-    id: "2",
-    title: "Acord de confidențialitate",
-    type: "Acord",
-    deadline: "2024-01-25",
-    priority: "medium",
-  },
-  {
-    id: "3",
-    title: "Declarație pe propria răspundere",
-    type: "Declarație",
-    priority: "low",
-  },
-];
 
 const priorityConfig = {
   high: {
@@ -49,6 +28,10 @@ const priorityConfig = {
 };
 
 export function DocumentsToSign() {
+  const { getCurrentOrganizationData } = useOrganization();
+  const orgData = getCurrentOrganizationData();
+  const mockDocuments = orgData.documenteDeSemnat || [];
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("ro-RO", {
       day: "numeric",

@@ -3,6 +3,7 @@
 import { CloseIcon } from "@/assets/icons";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 
 interface ModalProps {
   isOpen: boolean;
@@ -56,9 +57,9 @@ export function Modal({
     xl: "max-w-4xl",
   };
 
-  return (
+  const modalContent = (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4"
       onClick={onClose}
     >
       <div
@@ -84,5 +85,9 @@ export function Modal({
       </div>
     </div>
   );
+
+  return typeof window !== "undefined"
+    ? createPortal(modalContent, document.body)
+    : null;
 }
 

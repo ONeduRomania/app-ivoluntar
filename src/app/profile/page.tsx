@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useOrganization } from "@/contexts/organization-context";
 import { EditAvailability } from "./_components/edit-availability";
 import { EditEducation } from "./_components/edit-education";
 import { EditExperience } from "./_components/edit-experience";
@@ -11,12 +12,130 @@ import { EditSkills } from "./_components/edit-skills";
 import { InfoRow, InfoSection } from "./_components/info-section";
 import { Modal } from "./_components/modal";
 import { ProfileHeader } from "./_components/profile-header";
+import { MyPositionModal } from "./_components/my-position-modal";
+
+// Funcție pentru calcularea vechimii reale
+const calculateVechime = (dataInceput: string): string => {
+  const startDate = new Date(dataInceput);
+  const now = new Date();
+  
+  let years = now.getFullYear() - startDate.getFullYear();
+  let months = now.getMonth() - startDate.getMonth();
+  
+  if (months < 0) {
+    years--;
+    months += 12;
+  }
+  
+  if (years === 0) {
+    return `${months} ${months === 1 ? "lună" : "luni"}`;
+  } else if (months === 0) {
+    return `${years} ${years === 1 ? "an" : "ani"}`;
+  } else {
+    return `${years} ${years === 1 ? "an" : "ani"}, ${months} ${months === 1 ? "lună" : "luni"}`;
+  }
+};
+
+// Funcție pentru formatarea perioadei cu lună și an
+const formatPerioada = (perioada: string): string => {
+  // Dacă perioada conține "prezent", formatăm doar începutul
+  if (perioada.includes("prezent")) {
+    const parts = perioada.split(" - ");
+    if (parts.length === 2 && parts[0]) {
+      const year = parts[0].trim();
+      // Presupunem că începutul este în ianuarie dacă nu este specificat
+      return `ianuarie ${year} - prezent`;
+    }
+    return perioada;
+  }
+  
+  // Dacă perioada are format "YYYY - YYYY"
+  const parts = perioada.split(" - ");
+  if (parts.length === 2) {
+    const startYear = parts[0].trim();
+    const endYear = parts[1].trim();
+    // Presupunem început în ianuarie și sfârșit în decembrie dacă nu sunt specificate
+    return `ianuarie ${startYear} - decembrie ${endYear}`;
+  }
+  
+  return perioada;
+};
+
+// Funcție pentru formatarea datei cu zi, lună și an (opțional)
+const formatDataCompleta = (data: string): string => {
+  if (!data) return "";
+  
+  // Dacă este "prezent"
+  if (data.toLowerCase() === "prezent") {
+    return "prezent";
+  }
+  
+  // Dacă are format "YYYY-MM-DD" sau "YYYY-MM"
+  const datePattern = /^(\d{4})(?:-(\d{2}))?(?:-(\d{2}))?$/;
+  const match = data.match(datePattern);
+  
+  if (match) {
+    const year = match[1];
+    const month = match[2] ? parseInt(match[2]) : null;
+    const day = match[3] ? parseInt(match[3]) : null;
+    
+    const monthNames = [
+      "ianuarie", "februarie", "martie", "aprilie", "mai", "iunie",
+      "iulie", "august", "septembrie", "octombrie", "noiembrie", "decembrie"
+    ];
+    
+    if (month && day) {
+      return `${day} ${monthNames[month - 1]} ${year}`;
+    } else if (month) {
+      return `${monthNames[month - 1]} ${year}`;
+    } else {
+      return year;
+    }
+  }
+  
+  return data;
+};
+
+// Funcție pentru formatarea perioadei pentru studii și cursuri (cu dată de început și sfârșit)
+const formatPerioadaStudii = (dataInceput?: string, dataSfarsit?: string): string => {
+  if (!dataInceput) return "";
+  
+  const start = formatDataCompleta(dataInceput);
+  const end = dataSfarsit ? formatDataCompleta(dataSfarsit) : "prezent";
+  
+  return `${start} - ${end}`;
+};
+
+// Funcție pentru formatarea perioadei pentru experiențe profesionale
+const formatPerioadaProfesionala = (dataInceput?: string, dataSfarsit?: string): string => {
+  if (!dataInceput) return "";
+  
+  const start = formatDataCompleta(dataInceput);
+  const end = dataSfarsit ? formatDataCompleta(dataSfarsit) : "prezent";
+  
+  return `${start} - ${end}`;
+};
 
 export default function Page() {
+  const { currentOrganization, getCurrentOrganizationData, getAllVolunteerHistory, organizations } = useOrganization();
+  const initialOrgData = getCurrentOrganizationData();
+  const allVolunteerHistory = getAllVolunteerHistory();
+  
+  // Obține toate competențele din toate organizațiile
+  const allCompetente = organizations.flatMap(org => 
+    (org.data.competente || []).map(comp => ({
+      ...comp,
+      organizatieId: org.id,
+    }))
+  );
+  
+  // Calculează vechimea reală
+  const calculatedVechime = calculateVechime(initialOrgData.dataInceput);
+  
   const [data, setData] = useState({
     profilePhoto: "/images/user/user-03.png",
     name: "John Smith",
-    organization: "Asociația ONedu",
+    organization: currentOrganization.name,
     status: "activ",
     // Date personale
     numePrenume: "John Smith",
@@ -31,16 +150,7 @@ export default function Page() {
     dataEmiteriiBuletin: "2020-01-10",
     dataExpirareBuletin: "2030-01-10",
     emitentBuletin: "SPCLEP Sector 1",
-    experienteVoluntariat: [
-      {
-        id: "1",
-        organizatie: "Asociația ONedu",
-        pozitie: "Voluntar",
-        locatie: "București, România",
-        perioada: "2021 - prezent",
-        descriere: "Voluntariat în departamentul de comunicare",
-      },
-    ],
+    experienteVoluntariat: allVolunteerHistory,
     experienteProfesionale: [
       {
         id: "1",
@@ -48,6 +158,8 @@ export default function Page() {
         pozitie: "Specialist Marketing",
         locatie: "București, România",
         perioada: "2019 - 2021",
+        dataInceput: "2019-03-01",
+        dataSfarsit: "2021-12-31",
         descriere: "Dezvoltare strategii de marketing",
       },
       {
@@ -56,6 +168,8 @@ export default function Page() {
         pozitie: "Asistent Comunicare",
         locatie: "București, România",
         perioada: "2017 - 2019",
+        dataInceput: "2017-06-01",
+        dataSfarsit: "2019-02-28",
         descriere: "Suport pentru activități de comunicare",
       },
     ],
@@ -68,7 +182,10 @@ export default function Page() {
         nivel: "Licență",
         locatie: "București, România",
         perioada: "2016 - 2020",
+        dataInceput: "2016-09-01",
+        dataSfarsit: "2020-06-30",
         descriere: "",
+        diploma: "",
       },
       {
         id: "2",
@@ -77,22 +194,20 @@ export default function Page() {
         specializare: "Management de proiecte",
         locatie: "Online",
         perioada: "2022",
+        dataInceput: "2022-01-15",
+        dataSfarsit: "2022-03-15",
         descriere: "Certificat în management de proiecte",
+        diploma: "",
       },
     ],
     aptitudini: "Comunicare, Organizare, Leadership",
-    departament: "Comunicare",
-    superiorDirect: "Maria Popescu",
-    vechime: "3 ani, 5 luni",
+    functie: initialOrgData.functie,
+    departament: initialOrgData.departament,
+    superiorDirect: initialOrgData.superiorDirect,
+    vechime: calculatedVechime,
     documentImage: undefined as string | undefined,
     // Disponibilitate
-    disponibilitate: {
-      zile: "Luni - Vineri",
-      intervale: "09:00 - 18:00",
-      onsite: true,
-      online: true,
-      deplasari: true,
-    },
+    disponibilitate: initialOrgData.disponibilitate,
   });
 
   const [modals, setModals] = useState({
@@ -103,13 +218,13 @@ export default function Page() {
     recompense: false,
     editPersonalData: false,
     editIdDocument: false,
-    editExperienceVoluntariat: false,
     editExperienceProfesionala: false,
     editEducation: false,
     editSkills: false,
     viewAllExperiencesVoluntariat: false,
     viewAllExperiencesProfesionale: false,
     viewAllStudii: false,
+    myPosition: false,
   });
 
   const toggleModal = (modal: keyof typeof modals) => {
@@ -121,31 +236,28 @@ export default function Page() {
     setData((prev) => ({ ...prev, profilePhoto: url }));
   };
 
-  const documente = [
-    { nume: "Fișa voluntarului", status: "Încărcat", data: "15.01.2024" },
-    { nume: "Fișa SSM", status: "Încărcat", data: "15.01.2024" },
-    { nume: "Acord parental", status: "Necesar", data: "-" },
-    { nume: "Adeverință voluntariat", status: "Încărcat", data: "20.02.2024" },
-    { nume: "Certificat voluntar", status: "Încărcat", data: "25.02.2024" },
-  ];
+  // Actualizează datele organizației când se schimbă în context
+  useEffect(() => {
+    const orgData = getCurrentOrganizationData();
+    const allHistory = getAllVolunteerHistory();
+    setData((prev) => ({
+      ...prev,
+      organization: currentOrganization.name,
+      functie: orgData.functie,
+      departament: orgData.departament,
+      superiorDirect: orgData.superiorDirect,
+      vechime: calculateVechime(orgData.dataInceput),
+      experienteVoluntariat: allHistory,
+      disponibilitate: orgData.disponibilitate,
+    }));
+  }, [currentOrganization, getCurrentOrganizationData, getAllVolunteerHistory]);
 
-  const avertismente = [
-    {
-      data: "10.03.2024",
-      motiv: "Întârziere la activități",
-      tip: "Avertisment",
-    },
-  ];
-
-  const competente = [
-    { nume: "Management de proiecte", organizatie: "Asociația ONedu" },
-    { nume: "Comunicare eficientă", organizatie: "Asociația ONedu" },
-  ];
-
-  const recompense = [
-    { data: "15.12.2023", titlu: "Voluntarul lunii", descriere: "Recunoaștere pentru activitate exemplară" },
-    { data: "01.06.2023", titlu: "Certificat de excelență", descriere: "Pentru implicare deosebită în proiecte" },
-  ];
+  // Obține datele din context pentru a le folosi în componentă
+  const orgData = getCurrentOrganizationData();
+  const documente = orgData.documente || [];
+  const avertismente = orgData.avertismente || [];
+  const competente = orgData.competente || [];
+  const recompense = orgData.recompense || [];
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6 p-4 md:p-6">
@@ -160,6 +272,7 @@ export default function Page() {
         status={data.status}
         vechime={data.vechime}
         onPhotoChange={handlePhotoChange}
+        onViewOrgChart={() => toggleModal("myPosition")}
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -174,7 +287,10 @@ export default function Page() {
           <InfoRow label="Nume prenume" value={data.numePrenume} />
           <InfoRow
             label="Data nașterii"
-            value={new Date(data.dataNasterii).toLocaleDateString("ro-RO")}
+            value={(() => {
+              const date = new Date(data.dataNasterii);
+              return `${date.getDate().toString().padStart(2, "0")}.${(date.getMonth() + 1).toString().padStart(2, "0")}.${date.getFullYear()}`;
+            })()}
           />
           <InfoRow label="Domiciliu" value={data.domiciliu} />
           <InfoRow label="Reședință" value={data.resedinta} />
@@ -197,11 +313,17 @@ export default function Page() {
           />
           <InfoRow
             label="Data emiterii"
-            value={new Date(data.dataEmiteriiBuletin).toLocaleDateString("ro-RO")}
+            value={(() => {
+              const date = new Date(data.dataEmiteriiBuletin);
+              return `${date.getDate().toString().padStart(2, "0")}.${(date.getMonth() + 1).toString().padStart(2, "0")}.${date.getFullYear()}`;
+            })()}
           />
           <InfoRow
             label="Data expirării"
-            value={new Date(data.dataExpirareBuletin).toLocaleDateString("ro-RO")}
+            value={(() => {
+              const date = new Date(data.dataExpirareBuletin);
+              return `${date.getDate().toString().padStart(2, "0")}.${(date.getMonth() + 1).toString().padStart(2, "0")}.${date.getFullYear()}`;
+            })()}
           />
           <InfoRow label="Emitent" value={data.emitentBuletin} />
           {data.documentImage && (
@@ -235,44 +357,71 @@ export default function Page() {
               </div>
             }
           />
+          <InfoRow label="Funcție" value={data.functie} />
           <InfoRow label="Departament" value={data.departament} />
           <InfoRow label="Superior direct" value={data.superiorDirect} />
+          <InfoRow
+            label="Data aderării"
+            value={(() => {
+              const orgData = getCurrentOrganizationData();
+              const date = new Date(orgData.dataInceput);
+              const monthNames = [
+                "ianuarie", "februarie", "martie", "aprilie", "mai", "iunie",
+                "iulie", "august", "septembrie", "octombrie", "noiembrie", "decembrie"
+              ];
+              return `${date.getDate()} ${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+            })()}
+          />
         </InfoSection>
 
         {/* Istoric voluntariat */}
-        <InfoSection
-          title="Istoric voluntariat"
-          actionButton={{
-            label: "Editează",
-            onClick: () => toggleModal("editExperienceVoluntariat"),
-          }}
-        >
+        <InfoSection title="Istoric voluntariat">
           <div className="space-y-3">
-            {data.experienteVoluntariat.slice(0, 2).map((exp) => (
-              <div
-                key={exp.id}
-                className="rounded-lg border border-stroke p-3 dark:border-dark-3"
-              >
-                <p className="font-medium text-dark dark:text-white">
-                  {exp.organizatie}
-                </p>
-                {exp.pozitie && (
-                  <p className="text-xs text-dark-4 dark:text-dark-6">
-                    {exp.pozitie}
+            {data.experienteVoluntariat.slice(0, 2).map((exp) => {
+              // Găsește competențele pentru această organizație
+              const expCompetente = allCompetente.filter(comp => 
+                comp.organizatie === exp.organizatie
+              );
+              
+              return (
+                <div
+                  key={exp.id}
+                  className="rounded-lg border border-stroke p-3 dark:border-dark-3"
+                >
+                  <p className="font-medium text-dark dark:text-white">
+                    {exp.organizatie}
                   </p>
-                )}
-                {exp.locatie && (
-                  <p className="text-xs text-dark-4 dark:text-dark-6">
-                    📍 {exp.locatie}
-                  </p>
-                )}
-                {exp.perioada && (
-                  <p className="text-xs text-dark-4 dark:text-dark-6">
-                    {exp.perioada}
-                  </p>
-                )}
-              </div>
-            ))}
+                  {exp.pozitie && (
+                    <p className="text-xs text-dark-4 dark:text-dark-6">
+                      {exp.pozitie}
+                      {(exp as any).departament && ` - ${(exp as any).departament}`}
+                    </p>
+                  )}
+                  {((exp as any).dataInceput || (exp as any).dataSfarsit) && (
+                    <p className="text-xs text-dark-4 dark:text-dark-6">
+                      {formatPerioadaProfesionala((exp as any).dataInceput, (exp as any).dataSfarsit)}
+                    </p>
+                  )}
+                  {expCompetente.length > 0 && (
+                    <div className="mt-3">
+                      <p className="mb-2 text-xs font-medium text-dark-4 dark:text-dark-6">
+                        Competențe dobândite:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {expCompetente.map((comp, index) => (
+                          <span
+                            key={index}
+                            className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary dark:bg-primary/20"
+                          >
+                            {comp.nume}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
             {data.experienteVoluntariat.length > 2 && (
               <button
                 onClick={() => toggleModal("viewAllExperiencesVoluntariat")}
@@ -306,19 +455,9 @@ export default function Page() {
                     {exp.pozitie}
                   </p>
                 )}
-                {exp.locatie && (
-                  <p className="text-xs text-dark-4 dark:text-dark-6">
-                    📍 {exp.locatie}
-                  </p>
-                )}
-                {exp.perioada && (
-                  <p className="text-xs text-dark-4 dark:text-dark-6">
-                    {exp.perioada}
-                  </p>
-                )}
               </div>
             ))}
-            {data.experienteProfesionale.length > 2 && (
+            {data.experienteProfesionale.length > 0 && (
               <button
                 onClick={() => toggleModal("viewAllExperiencesProfesionale")}
                 className="w-full rounded-lg border border-stroke px-4 py-2 text-sm font-medium text-primary hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-3"
@@ -338,7 +477,18 @@ export default function Page() {
           }}
         >
           <div className="space-y-3">
-            {data.studii.slice(0, 2).map((studiu) => (
+            {[...data.studii]
+              .sort((a, b) => {
+                // Sortează după data de sfârșit (sau început dacă nu există sfârșit), descrescător
+                const dateA = (a as any).dataSfarsit || (a as any).dataInceput || "";
+                const dateB = (b as any).dataSfarsit || (b as any).dataInceput || "";
+                if (!dateA && !dateB) return 0;
+                if (!dateA) return 1;
+                if (!dateB) return -1;
+                return new Date(dateB).getTime() - new Date(dateA).getTime();
+              })
+              .slice(0, 2)
+              .map((studiu) => (
               <div
                 key={studiu.id}
                 className="rounded-lg border border-stroke p-3 dark:border-dark-3"
@@ -356,24 +506,9 @@ export default function Page() {
                     {studiu.specializare}
                   </p>
                 )}
-                {studiu.nivel && (
-                  <p className="text-xs text-dark-4 dark:text-dark-6">
-                    {studiu.nivel}
-                  </p>
-                )}
-                {studiu.locatie && (
-                  <p className="text-xs text-dark-4 dark:text-dark-6">
-                    📍 {studiu.locatie}
-                  </p>
-                )}
-                {studiu.perioada && (
-                  <p className="text-xs text-dark-4 dark:text-dark-6">
-                    {studiu.perioada}
-                  </p>
-                )}
               </div>
             ))}
-            {data.studii.length > 2 && (
+            {data.studii.length > 0 && (
               <button
                 onClick={() => toggleModal("viewAllStudii")}
                 className="w-full rounded-lg border border-stroke px-4 py-2 text-sm font-medium text-primary hover:bg-gray-2 dark:border-dark-3 dark:hover:bg-dark-3"
@@ -661,31 +796,21 @@ export default function Page() {
         }}
       />
 
-      {/* Modal Editare Experiență Voluntariat */}
-      <EditExperience
-        isOpen={modals.editExperienceVoluntariat}
-        onClose={() => toggleModal("editExperienceVoluntariat")}
-        experiences={data.experienteVoluntariat}
-        onSave={(experiences) => {
-          setData((prev) => ({
-            ...prev,
-            experienteVoluntariat: experiences.map((exp) => ({
-              id: exp.id,
-              organizatie: exp.organizatie,
-              pozitie: exp.pozitie || "",
-              locatie: exp.locatie || "",
-              perioada: exp.perioada || "",
-              descriere: exp.descriere || "",
-            })),
-          }));
-        }}
-      />
 
       {/* Modal Editare Experiență Profesională */}
       <EditExperience
         isOpen={modals.editExperienceProfesionala}
         onClose={() => toggleModal("editExperienceProfesionala")}
-        experiences={data.experienteProfesionale}
+        experiences={data.experienteProfesionale.map((exp) => ({
+          id: exp.id,
+          organizatie: exp.organizatie,
+          pozitie: exp.pozitie,
+          locatie: exp.locatie,
+          perioada: exp.perioada,
+          dataInceput: (exp as any).dataInceput,
+          dataSfarsit: (exp as any).dataSfarsit,
+          descriere: exp.descriere,
+        }))}
         onSave={(experiences) => {
           setData((prev) => ({
             ...prev,
@@ -695,6 +820,8 @@ export default function Page() {
               pozitie: exp.pozitie || "",
               locatie: exp.locatie || "",
               perioada: exp.perioada || "",
+              dataInceput: exp.dataInceput || "",
+              dataSfarsit: exp.dataSfarsit || "",
               descriere: exp.descriere || "",
             })),
           }));
@@ -739,7 +866,10 @@ export default function Page() {
           nivel: edu.nivel,
           locatie: edu.locatie,
           perioada: edu.perioada,
+          dataInceput: (edu as any).dataInceput,
+          dataSfarsit: (edu as any).dataSfarsit,
           descriere: edu.descriere,
+          diploma: (edu as any).diploma,
         }))}
         onSave={(educations) => {
           setData((prev) => ({
@@ -752,7 +882,10 @@ export default function Page() {
               nivel: edu.nivel || "",
               locatie: edu.locatie || "",
               perioada: edu.perioada || "",
+              dataInceput: edu.dataInceput || "",
+              dataSfarsit: edu.dataSfarsit || "",
               descriere: edu.descriere || "",
+              diploma: edu.diploma || "",
             })),
           }));
         }}
@@ -766,30 +899,53 @@ export default function Page() {
         size="lg"
       >
         <div className="space-y-4">
-          {data.experienteVoluntariat.map((exp) => (
-            <div
-              key={exp.id}
-              className="rounded-lg border border-stroke p-4 dark:border-dark-3"
-            >
-              <div className="mb-2">
-                <p className="font-medium text-dark dark:text-white">
-                  {exp.organizatie}
-                </p>
-                {exp.pozitie && (
-                  <p className="text-sm text-dark-4 dark:text-dark-6">
-                    {exp.pozitie}
+          {data.experienteVoluntariat.map((exp) => {
+            // Găsește competențele pentru această organizație
+            const expCompetente = allCompetente.filter(comp => 
+              comp.organizatie === exp.organizatie
+            );
+            
+            return (
+              <div
+                key={exp.id}
+                className="rounded-lg border border-stroke p-4 dark:border-dark-3"
+              >
+                <div className="mb-2">
+                  <p className="font-medium text-dark dark:text-white">
+                    {exp.organizatie}
+                  </p>
+                  {exp.pozitie && (
+                    <p className="text-sm text-dark-4 dark:text-dark-6">
+                      {exp.pozitie}
+                      {(exp as any).departament && ` - ${(exp as any).departament}`}
+                    </p>
+                  )}
+                </div>
+                {exp.perioada && (
+                  <p className="text-xs text-dark-4 dark:text-dark-6">
+                    {formatPerioada(exp.perioada)}
                   </p>
                 )}
-              </div>
-              <div className="space-y-1 text-xs text-dark-4 dark:text-dark-6">
-                {exp.locatie && <p>📍 {exp.locatie}</p>}
-                {exp.perioada && <p>📅 {exp.perioada}</p>}
-                {exp.descriere && (
-                  <p className="mt-2 text-sm">{exp.descriere}</p>
+                {expCompetente.length > 0 && (
+                  <div className="mt-3">
+                    <p className="mb-2 text-xs font-medium text-dark-4 dark:text-dark-6">
+                      Competențe dobândite:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {expCompetente.map((comp, index) => (
+                        <span
+                          key={index}
+                          className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary dark:bg-primary/20"
+                        >
+                          {comp.nume}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </Modal>
 
@@ -810,15 +966,19 @@ export default function Page() {
                 <p className="font-medium text-dark dark:text-white">
                   {exp.organizatie}
                 </p>
-                {exp.pozitie && (
+                {(exp.pozitie || exp.locatie) && (
                   <p className="text-sm text-dark-4 dark:text-dark-6">
                     {exp.pozitie}
+                    {exp.pozitie && exp.locatie && " | "}
+                    {exp.locatie}
                   </p>
                 )}
               </div>
               <div className="space-y-1 text-xs text-dark-4 dark:text-dark-6">
-                {exp.locatie && <p>📍 {exp.locatie}</p>}
-                {exp.perioada && <p>📅 {exp.perioada}</p>}
+                {exp.locatie && <p>Locație: {exp.locatie}</p>}
+                {((exp as any).dataInceput || (exp as any).dataSfarsit) && (
+                  <p>Perioadă: {formatPerioadaProfesionala((exp as any).dataInceput, (exp as any).dataSfarsit)}</p>
+                )}
                 {exp.descriere && (
                   <p className="mt-2 text-sm">{exp.descriere}</p>
                 )}
@@ -836,7 +996,17 @@ export default function Page() {
         size="lg"
       >
         <div className="space-y-4">
-          {data.studii.map((studiu) => (
+          {[...data.studii]
+            .sort((a, b) => {
+              // Sortează după data de sfârșit (sau început dacă nu există sfârșit), descrescător
+              const dateA = (a as any).dataSfarsit || (a as any).dataInceput || "";
+              const dateB = (b as any).dataSfarsit || (b as any).dataInceput || "";
+              if (!dateA && !dateB) return 0;
+              if (!dateA) return 1;
+              if (!dateB) return -1;
+              return new Date(dateB).getTime() - new Date(dateA).getTime();
+            })
+            .map((studiu) => (
             <div
               key={studiu.id}
               className="rounded-lg border border-stroke p-4 dark:border-dark-3"
@@ -850,12 +1020,31 @@ export default function Page() {
                 </span>
               </div>
               <div className="space-y-1 text-xs text-dark-4 dark:text-dark-6">
-                {studiu.specializare && <p>{studiu.specializare}</p>}
-                {studiu.nivel && <p>{studiu.nivel}</p>}
-                {studiu.locatie && <p>📍 {studiu.locatie}</p>}
-                {studiu.perioada && <p>📅 {studiu.perioada}</p>}
+                {studiu.specializare && <p>Specializare: {studiu.specializare}</p>}
+                {studiu.nivel && <p>Nivel: {studiu.nivel}</p>}
+                {studiu.locatie && <p>Locație: {studiu.locatie}</p>}
+                {((studiu as any).dataInceput || (studiu as any).dataSfarsit) && (
+                  <p>Perioadă: {formatPerioadaStudii((studiu as any).dataInceput, (studiu as any).dataSfarsit)}</p>
+                )}
                 {studiu.descriere && (
-                  <p className="mt-2 text-sm">{studiu.descriere}</p>
+                  <p className="mt-2 text-sm">Descriere: {studiu.descriere}</p>
+                )}
+                {(studiu as any).diploma && (
+                  <div className="mt-2">
+                    <p className="mb-1 text-xs font-medium text-dark-4 dark:text-dark-6">
+                      Diplomă:
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={(studiu as any).diploma}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Vezi diplomă
+                      </a>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -891,6 +1080,18 @@ export default function Page() {
           ))}
         </div>
       </Modal>
+
+      {/* Modal Poziția mea */}
+      <MyPositionModal
+        isOpen={modals.myPosition}
+        onClose={() => toggleModal("myPosition")}
+        currentUser={{
+          firstName: data.name.split(" ")[0] || "John",
+          lastName: data.name.split(" ").slice(1).join(" ") || "Smith",
+          position: data.functie,
+          department: data.departament,
+        }}
+      />
     </div>
   );
 }

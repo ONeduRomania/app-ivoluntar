@@ -17,15 +17,22 @@ import {
   SettingsIcon,
   UserIcon,
 } from "./icons";
+import { useOrganization } from "@/contexts/organization-context";
+import { ChangeOrganizationModal } from "./change-organization-modal";
 
 export function UserInfo() {
   const [isOpen, setIsOpen] = useState(false);
+  const [showChangeOrgModal, setShowChangeOrgModal] = useState(false);
+  const { currentOrganization, organizations } = useOrganization();
 
   const USER = {
     name: "John Smith",
-    organization: "Asociația ONedu",
+    organization: currentOrganization.name,
     img: "/images/user/user-03.png",
   };
+
+  // Afișează "Schimbă organizația" doar dacă utilizatorul are mai mult de o organizație
+  const hasMultipleOrganizations = organizations.length > 1;
 
   return (
     <Dropdown isOpen={isOpen} setIsOpen={setIsOpen}>
@@ -42,9 +49,9 @@ export function UserInfo() {
             height={200}
           />
           <figcaption className="flex items-center gap-1 font-medium text-dark dark:text-dark-6 max-[1024px]:sr-only">
-            <div className="flex flex-col">
-              <span>{USER.name}</span>
-              <span className="text-xs font-normal text-gray-6 dark:text-dark-6">
+            <div className="flex flex-col text-left">
+              <span className="text-left">{USER.name}</span>
+              <span className="text-left text-xs font-normal text-gray-6 dark:text-dark-6">
                 {USER.organization}
               </span>
             </div>
@@ -100,7 +107,7 @@ export function UserInfo() {
           </Link>
 
           <Link
-            href={"/evaluations"}
+            href={"/evaluarile-mele"}
             onClick={() => setIsOpen(false)}
             className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[9px] hover:bg-gray-2 hover:text-dark dark:hover:bg-dark-3 dark:hover:text-white"
           >
@@ -111,17 +118,21 @@ export function UserInfo() {
             </span>
           </Link>
 
-          <Link
-            href={"/change-organization"}
-            onClick={() => setIsOpen(false)}
-            className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[9px] hover:bg-gray-2 hover:text-dark dark:hover:bg-dark-3 dark:hover:text-white"
-          >
-            <OrganizationIcon />
+          {hasMultipleOrganizations && (
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                setShowChangeOrgModal(true);
+              }}
+              className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[9px] hover:bg-gray-2 hover:text-dark dark:hover:bg-dark-3 dark:hover:text-white"
+            >
+              <OrganizationIcon />
 
-            <span className="mr-auto text-base font-medium">
-              Schimbă organizația
-            </span>
-          </Link>
+              <span className="mr-auto text-base font-medium">
+                Schimbă organizația
+              </span>
+            </button>
+          )}
 
           <a
             href="https://contulmeu.onedu.ro/settings"
@@ -149,6 +160,11 @@ export function UserInfo() {
           </button>
         </div>
       </DropdownContent>
+
+      <ChangeOrganizationModal
+        isOpen={showChangeOrgModal}
+        onClose={() => setShowChangeOrgModal(false)}
+      />
     </Dropdown>
   );
 }

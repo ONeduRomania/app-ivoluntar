@@ -22,9 +22,9 @@ export const NAV_DATA = [
         items: [],
       },
       {
-        title: "Organigramă",
-        url: "/organigrama",
-        icon: Icons.OrganizationChartIcon,
+        title: "Noutăți",
+        url: "/noutati",
+        icon: Icons.NewsIcon,
         items: [],
       },
       {
@@ -35,30 +35,9 @@ export const NAV_DATA = [
       },
       {
         title: "Resurse",
+        url: "/resurse",
         icon: Icons.ResourcesIcon,
-        items: [
-          {
-            title: "Organizare",
-            url: "/resurse/organizare",
-          },
-          {
-            title: "Contabilitate",
-            url: "/resurse/contabilitate",
-          },
-          {
-            title: "Secretariat",
-            url: "/resurse/secretariat",
-          },
-          {
-            title: "WikiVoluntariat",
-            url: "https://wiki.ivoluntar.org",
-            external: true,
-          },
-          {
-            title: "Radiere",
-            url: "/resurse/radiere",
-          },
-        ],
+        items: [],
       },
     ],
   },

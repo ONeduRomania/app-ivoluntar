@@ -8,9 +8,25 @@ import { MenuIcon } from "./icons";
 import { Notification } from "./notification";
 import { ThemeToggleSwitch } from "./theme-toggle";
 import { UserInfo } from "./user-info";
+import { useSearch } from "@/contexts/search-context";
+import { SearchResults } from "./search-results";
+import { useState, useRef, useEffect } from "react";
+import { useClickOutside } from "@/hooks/use-click-outside";
+import { usePathname } from "next/navigation";
 
 export function Header() {
   const { toggleSidebar, isMobile } = useSidebarContext();
+  const { searchQuery, setSearchQuery } = useSearch();
+  const [showResults, setShowResults] = useState(false);
+  const searchContainerRef = useClickOutside<HTMLDivElement>(() => {
+    setShowResults(false);
+  });
+  const pathname = usePathname();
+
+  // Ascunde tooltip-ul când se schimbă pagina
+  useEffect(() => {
+    setShowResults(false);
+  }, [pathname]);
 
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between border-b border-stroke bg-white px-4 py-1.5 shadow-1 dark:border-stroke-dark dark:bg-gray-dark md:px-5 2xl:px-10">
@@ -34,14 +50,29 @@ export function Header() {
         </Link>
       )}
 
-      <div className="relative flex-1 max-w-[600px] ml-4 mr-4">
+      <div
+        ref={searchContainerRef}
+        className="relative flex-1 max-w-[600px] ml-4 mr-4"
+      >
         <input
           type="search"
           placeholder="Caută"
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            setShowResults(true);
+          }}
+          onFocus={() => {
+            if (searchQuery.trim()) {
+              setShowResults(true);
+            }
+          }}
           className="flex w-full items-center gap-3.5 rounded-full border bg-gray-2 py-1.5 pl-[53px] pr-5 outline-none transition-colors focus-visible:border-primary dark:border-dark-3 dark:bg-dark-2 dark:hover:border-dark-4 dark:hover:bg-dark-3 dark:hover:text-dark-6 dark:focus-visible:border-primary"
         />
 
         <SearchIcon className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 max-[1015px]:size-5" />
+
+        <SearchResults isOpen={showResults} onClose={() => setShowResults(false)} />
       </div>
 
       <div className="flex flex-1 items-center justify-end gap-2 min-[375px]:gap-4">

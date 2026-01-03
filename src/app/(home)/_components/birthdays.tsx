@@ -1,3 +1,6 @@
+"use client";
+
+import { useOrganization } from "@/contexts/organization-context";
 import { cn } from "@/lib/utils";
 
 interface Birthday {
@@ -7,29 +10,11 @@ interface Birthday {
   daysUntil: number;
 }
 
-// TODO: Înlocuiește cu date reale din backend
-const mockBirthdays: Birthday[] = [
-  {
-    id: "1",
-    name: "Maria Popescu",
-    date: "1990-01-20",
-    daysUntil: 5,
-  },
-  {
-    id: "2",
-    name: "Ion Georgescu",
-    date: "1985-01-22",
-    daysUntil: 7,
-  },
-  {
-    id: "3",
-    name: "Ana Ionescu",
-    date: "1992-01-25",
-    daysUntil: 10,
-  },
-];
-
 export function Birthdays() {
+  const { getCurrentOrganizationData } = useOrganization();
+  const orgData = getCurrentOrganizationData();
+  const mockBirthdays = orgData.zileDeNastere || [];
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("ro-RO", {

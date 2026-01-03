@@ -10,6 +10,7 @@ interface ProfileHeaderProps {
   status: string;
   vechime: string;
   onPhotoChange: (file: File) => void;
+  onViewOrgChart?: () => void;
 }
 
 export function ProfileHeader({
@@ -19,6 +20,7 @@ export function ProfileHeader({
   status,
   vechime,
   onPhotoChange,
+  onViewOrgChart,
 }: ProfileHeaderProps) {
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -63,21 +65,31 @@ export function ProfileHeader({
         </label>
       </div>
 
-      <div className="flex-1 text-center sm:text-left">
-        <h1 className="mb-1 text-2xl font-bold text-dark dark:text-white">
-          {name}
-        </h1>
-        <p className="mb-1 text-sm text-dark-4 dark:text-dark-6">
-          {organization}
-        </p>
-        <p className="mb-2 text-xs text-dark-4 dark:text-dark-6">
-          Vechime: {vechime}
-        </p>
-        <span
-          className={`inline-block rounded-full px-3 py-1 text-xs font-medium capitalize ${getStatusColor(status)}`}
-        >
-          {status}
-        </span>
+      <div className="flex flex-1 flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
+        <div className="flex-1">
+          <h1 className="mb-1 text-2xl font-bold text-dark dark:text-white">
+            {name}
+          </h1>
+          <p className="mb-1 text-sm text-dark-4 dark:text-dark-6">
+            {organization}
+          </p>
+          <p className="mb-2 text-xs text-dark-4 dark:text-dark-6">
+            Vechime: {vechime}
+          </p>
+          <span
+            className={`inline-block rounded-full px-3 py-1 text-xs font-medium capitalize ${getStatusColor(status)}`}
+          >
+            {status}
+          </span>
+        </div>
+        {onViewOrgChart && (
+          <button
+            onClick={onViewOrgChart}
+            className="rounded-lg border border-primary bg-primary/5 px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10 dark:border-primary dark:bg-primary/10 dark:hover:bg-primary/20"
+          >
+            Vezi organigrama
+          </button>
+        )}
       </div>
     </div>
   );

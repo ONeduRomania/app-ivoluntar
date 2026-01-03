@@ -9,6 +9,8 @@ interface Experience {
   pozitie?: string;
   locatie?: string;
   perioada?: string;
+  dataInceput?: string;
+  dataSfarsit?: string;
   descriere?: string;
 }
 
@@ -36,6 +38,8 @@ export function EditExperience({
         pozitie: "",
         locatie: "",
         perioada: "",
+        dataInceput: "",
+        dataSfarsit: "",
         descriere: "",
       },
     ]);
@@ -133,17 +137,34 @@ export function EditExperience({
 
                 <div>
                   <label className="mb-1 block text-xs font-medium text-dark dark:text-white">
-                    Perioadă
+                    Data de început *
                   </label>
                   <input
-                    type="text"
-                    value={exp.perioada || ""}
+                    type="date"
+                    value={exp.dataInceput || ""}
                     onChange={(e) =>
-                      updateExperience(exp.id, "perioada", e.target.value)
+                      updateExperience(exp.id, "dataInceput", e.target.value)
                     }
-                    placeholder="ex: 2020 - 2023"
+                    className="w-full rounded-lg border border-stroke bg-white px-3 py-2 text-sm outline-none focus:border-primary dark:border-dark-3 dark:bg-dark-2"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-dark dark:text-white">
+                    Data de sfârșit
+                  </label>
+                  <input
+                    type="date"
+                    value={exp.dataSfarsit || ""}
+                    onChange={(e) =>
+                      updateExperience(exp.id, "dataSfarsit", e.target.value)
+                    }
                     className="w-full rounded-lg border border-stroke bg-white px-3 py-2 text-sm outline-none focus:border-primary dark:border-dark-3 dark:bg-dark-2"
                   />
+                  <p className="mt-1 text-xs text-dark-4 dark:text-dark-6">
+                    Lăsați gol pentru "prezent"
+                  </p>
                 </div>
 
                 <div className="md:col-span-2">

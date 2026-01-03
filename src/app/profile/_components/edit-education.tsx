@@ -11,7 +11,10 @@ interface Education {
   nivel?: string;
   locatie?: string;
   perioada?: string;
+  dataInceput?: string;
+  dataSfarsit?: string;
   descriere?: string;
+  diploma?: string;
 }
 
 interface EditEducationProps {
@@ -28,6 +31,7 @@ export function EditEducation({
   onSave,
 }: EditEducationProps) {
   const [formEducations, setFormEducations] = useState<Education[]>(educations);
+  const [diplomaFiles, setDiplomaFiles] = useState<Record<string, string>>({});
 
   const addEducation = () => {
     setFormEducations((prev) => [
@@ -40,7 +44,10 @@ export function EditEducation({
         nivel: "",
         locatie: "",
         perioada: "",
+        dataInceput: "",
+        dataSfarsit: "",
         descriere: "",
+        diploma: "",
       },
     ]);
   };
@@ -53,6 +60,16 @@ export function EditEducation({
     setFormEducations((prev) =>
       prev.map((edu) => (edu.id === id ? { ...edu, [field]: value } : edu)),
     );
+  };
+
+  const handleDiplomaUpload = (id: string, file: File) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result as string;
+      setDiplomaFiles((prev) => ({ ...prev, [id]: result }));
+      updateEducation(id, "diploma", result);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -198,17 +215,81 @@ export function EditEducation({
 
                 <div>
                   <label className="mb-1 block text-xs font-medium text-dark dark:text-white">
-                    Perioadă
+                    Data de început *
                   </label>
                   <input
-                    type="text"
-                    value={edu.perioada || ""}
+                    type="date"
+                    value={edu.dataInceput || ""}
                     onChange={(e) =>
-                      updateEducation(edu.id, "perioada", e.target.value)
+                      updateEducation(edu.id, "dataInceput", e.target.value)
                     }
-                    placeholder="ex: 2016 - 2020"
+                    className="w-full rounded-lg border border-stroke bg-white px-3 py-2 text-sm outline-none focus:border-primary dark:border-dark-3 dark:bg-dark-2"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-dark dark:text-white">
+                    Data de sfârșit
+                  </label>
+                  <input
+                    type="date"
+                    value={edu.dataSfarsit || ""}
+                    onChange={(e) =>
+                      updateEducation(edu.id, "dataSfarsit", e.target.value)
+                    }
                     className="w-full rounded-lg border border-stroke bg-white px-3 py-2 text-sm outline-none focus:border-primary dark:border-dark-3 dark:bg-dark-2"
                   />
+                  <p className="mt-1 text-xs text-dark-4 dark:text-dark-6">
+                    Lăsați gol pentru "prezent"
+                  </p>
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="mb-1 block text-xs font-medium text-dark dark:text-white">
+                    Diplomă
+                  </label>
+                  <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        handleDiplomaUpload(edu.id, file);
+                      }
+                    }}
+                    className="w-full rounded-lg border border-stroke bg-white px-3 py-2 text-sm outline-none focus:border-primary dark:border-dark-3 dark:bg-dark-2"
+                  />
+                  {diplomaFiles[edu.id] && (
+                    <div className="mt-2">
+                      <p className="mb-1 text-xs text-green dark:text-green-light">
+                        ✓ Document încărcat
+                      </p>
+                      <a
+                        href={diplomaFiles[edu.id]}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Vezi document
+                      </a>
+                    </div>
+                  )}
+                  {edu.diploma && !diplomaFiles[edu.id] && (
+                    <div className="mt-2">
+                      <p className="mb-1 text-xs text-dark-4 dark:text-dark-6">
+                        Document existent:
+                      </p>
+                      <a
+                        href={edu.diploma}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Vezi document
+                      </a>
+                    </div>
+                  )}
                 </div>
 
                 <div className="md:col-span-2">

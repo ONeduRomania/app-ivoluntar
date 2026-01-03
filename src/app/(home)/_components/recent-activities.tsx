@@ -1,3 +1,6 @@
+"use client";
+
+import { useOrganization } from "@/contexts/organization-context";
 import { cn } from "@/lib/utils";
 
 interface Activity {
@@ -8,34 +11,6 @@ interface Activity {
   date: string;
   status: "approved" | "pending" | "rejected";
 }
-
-// TODO: Înlocuiește cu date reale din backend
-const mockActivities: Activity[] = [
-  {
-    id: "1",
-    activity: "Activități administrative",
-    hours: 2,
-    minutes: 30,
-    date: "2024-01-15",
-    status: "approved",
-  },
-  {
-    id: "2",
-    activity: "Suport pentru evenimente",
-    hours: 4,
-    minutes: 0,
-    date: "2024-01-14",
-    status: "pending",
-  },
-  {
-    id: "3",
-    activity: "Comunicare și marketing",
-    hours: 1,
-    minutes: 45,
-    date: "2024-01-13",
-    status: "rejected",
-  },
-];
 
 const statusConfig = {
   approved: {
@@ -54,6 +29,22 @@ const statusConfig = {
 };
 
 export function RecentActivities() {
+  const { getCurrentOrganizationData } = useOrganization();
+  const orgData = getCurrentOrganizationData();
+  
+  // Obține ultimele 5 activități din pontaj, sortate după dată (cele mai recente primele)
+  const recentActivities = [...orgData.timesheetEntries]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 5)
+    .map((entry) => ({
+      id: entry.id,
+      activity: entry.activity,
+      hours: entry.hours,
+      minutes: entry.minutes,
+      date: entry.date,
+      status: entry.status,
+    }));
+
   return (
     <div className="rounded-[10px] bg-white p-4 shadow-1 dark:bg-gray-dark">
       <h2 className="mb-4 text-lg font-bold text-dark dark:text-white">
@@ -61,7 +52,7 @@ export function RecentActivities() {
       </h2>
 
       <div className="space-y-3">
-        {mockActivities.map((activity) => {
+        {recentActivities.map((activity) => {
           const status = statusConfig[activity.status];
           return (
             <div
@@ -93,7 +84,7 @@ export function RecentActivities() {
         })}
       </div>
 
-      {mockActivities.length === 0 && (
+      {recentActivities.length === 0 && (
         <p className="py-4 text-center text-sm text-dark-4 dark:text-dark-6">
           Nu există activități recente
         </p>
