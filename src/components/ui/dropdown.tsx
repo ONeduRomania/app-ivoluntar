@@ -1,6 +1,5 @@
 "use client";
 
-import { useClickOutside } from "@/hooks/use-click-outside";
 import { cn } from "@/lib/utils";
 import { SetStateActionType } from "@/types/set-state-action-type";
 import {
@@ -17,7 +16,7 @@ type DropdownContextType = {
   isOpen: boolean;
   handleOpen: () => void;
   handleClose: () => void;
-  containerRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
 };
 
 const DropdownContext = createContext<DropdownContextType | null>(null);
